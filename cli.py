@@ -1,38 +1,45 @@
-#!/usr/bin/env python3
-
 import argparse
-import sys
-from core.scaffold import run as run_scaffold
+import os
 
 def main():
     parser = argparse.ArgumentParser(
-        description="SDK Core Command Line Interface"
+        description="Trace SDK CLI – manage plugins, integrations, and deployment scaffolds."
     )
-
-    subparsers = parser.add_subparsers(
-        title="Commands",
-        dest="command",
-        required=True
-    )
-
-    # scaffold command
-    scaffold_parser = subparsers.add_parser(
-        "scaffold",
-        help="Create a new project scaffold"
-    )
-    scaffold_parser.add_argument(
-        "--name",
-        required=True,
-        help="Name of the new project"
+    parser.add_argument(
+        "command",
+        choices=["init", "build", "deploy"],
+        help="Command to execute (init, build, deploy)"
     )
 
     args = parser.parse_args()
 
-    if args.command == "scaffold":
-        run_scaffold(args.name)
-    else:
-        print("Unknown command. Use --help for guidance.")
-        sys.exit(1)
+    if args.command == "init":
+        plugin_name = input("Enter plugin name: ").strip()
+        if not plugin_name:
+            print("No plugin name provided.")
+            return
 
-if __name__ == "__main__":
-    main()
+        os.makedirs(f"{plugin_name}", exist_ok=True)
+        with open(f"{plugin_name}/__init__.py", "w") as f:
+            f.write(f"# {plugin_name} module")
+
+        with open(f"{plugin_name}/plugin.py", "w") as f:
+            f.write(
+                f'''def register():
+    print("Registering {plugin_name} plugin")
+'''
+            )
+
+        with open(f"{plugin_name}/config.json", "w") as f:
+            f.write(
+                f'''{{
+    "name": "{plugin_name}",
+    "version": "0.1.0"
+}}'''
+            )
+
+        print(f"✅ Plugin scaffold created at: {plugin_name}/")
+    elif args.command == "build":
+        print("Building Trace SDK package...")
+    elif args.command == "deploy":
+        print("Deploying SDK to target environment...")

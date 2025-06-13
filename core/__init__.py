@@ -1,1 +1,1 @@
-# Core module for TRACE SDK
+# Core module init
